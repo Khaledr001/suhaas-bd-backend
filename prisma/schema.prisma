@@ -10,13 +10,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(100)
+  email     String     @unique @db.VarChar(100)
+  password  String     @db.VarChar(100)
+  role      Role       @default(STAFF)
+  status    UserStatus @default(ACTIVE)
+  invitedAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  projects  Project[]
 
   @@map("users")
+}
+
+model Invite {
+  id         Int       @id @default(autoincrement())
+  email      String    @db.VarChar(100)
+  role       Role
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+
+  @@map("invites")
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(100)
+  description String?       @db.VarChar(255)
+  status      ProjectStatus @default(ACTIVE)
+  isDeleted   Boolean       @default(false)
+  
+  createdBy   Int
+  createdByRelation   User  @relation(fields: [createdBy], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("projects")
 }
