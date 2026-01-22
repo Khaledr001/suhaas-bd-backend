@@ -31,7 +31,7 @@ model User {
   id        Int        @id @default(autoincrement())
   name      String     @db.VarChar(100)
   email     String     @unique @db.VarChar(100)
-  password  String     @db.VarChar(100)
+  password  String     @db.VarChar(255)
   role      Role       @default(STAFF)
   status    UserStatus @default(ACTIVE)
   invitedAt DateTime?
@@ -39,6 +39,7 @@ model User {
   updatedAt DateTime   @updatedAt
 
   projects  Project[]
+  auditLogs AuditLog[]
 
   @@map("users")
 }
@@ -50,6 +51,7 @@ model Invite {
   token      String    @unique
   expiresAt  DateTime
   acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   @@map("invites")
 }
@@ -68,4 +70,16 @@ model Project {
   updatedAt   DateTime      @updatedAt
 
   @@map("projects")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String   @db.VarChar(100)
+  details   Json?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
 }
